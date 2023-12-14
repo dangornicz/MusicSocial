@@ -7,7 +7,9 @@ from django.utils.datetime_safe import datetime
 
 # Create your views here.
 def ticketmaster_home(request):
+    # to not populate the background when the view is called before search
     response_info = "none"
+
     if request.method == 'POST':
         genre = request.POST['genre']
         location = request.POST['location']
@@ -19,46 +21,50 @@ def ticketmaster_home(request):
         elif not location:
             messages.info(request, 'City cannot be empty. Please enter a city.')
             redirect('home')
-
-        event_data = default_api_call(genre, location)
-
-        if event_data is None:
-            messages.info(request, 'The server encountered an issue while fetching data. Please try again later.')
-            redirect('home')
-
         else:
-            response_info = event_data['page']['totalElements']
-            events = event_data['_embedded']['events']
-            event_list = []
-            print(events[0]['name'])
-            for event in events:
-                event_name = event['name']
-                event_date_time = event['dates']['start']['dateTime']
-                event_venue = event['_embedded']['venues'][0]['name']
-                event_address = event['_embedded']['venues'][0]['address']['line1']
-                event_city = event['_embedded']['venues'][0]['city']['name']
-                event_state = event['_embedded']['venues'][0]['state']['name']
-                event_image = event['images'][0]['url']
-                event_url = event['url']
+            event_data = default_api_call(genre, location)
 
-                # code from APIExamples github repo to format date
-                date_object = datetime.strptime(event_date_time[:10], "%Y-%m-%d")
-                event_date = date_object.strftime("%a %b %d %Y")
+            if event_data is None:
+                messages.info(request, 'The server encountered an issue while fetching data. Please try again later.')
+                redirect('home')
 
-                dictionary_placeholder = {
-                    'event_name': event_name,
-                    'event_date': event_date,
-                    'event_venue': event_venue,
-                    'event_address': event_address,
-                    'event_city': event_city,
-                    'event_state': event_state,
-                    'event_image': event_image,
-                    'event_url': event_url,
-                }
-                event_list.append(dictionary_placeholder)
+            else:
+                response_info = event_data['page']['size']
+                events = event_data['_embedded']['events']
+                event_list = []
+                print(events[0]['name'])
+                for event in events:
+                    event_name = event['name']
+                    # to handle key error when json response doesn't have 'datetime'
+                    try:
+                        event_date_time = event['dates']['start']['dateTime']
+                    except KeyError:
+                        event_date_time = "2023-01-01T00:30:00Z"
+                    event_venue = event['_embedded']['venues'][0]['name']
+                    event_address = event['_embedded']['venues'][0]['address']['line1']
+                    event_city = event['_embedded']['venues'][0]['city']['name']
+                    event_state = event['_embedded']['venues'][0]['state']['name']
+                    event_image = event['images'][0]['url']
+                    event_url = event['url']
 
-            context = {'events': event_list, 'response_info': response_info}
-            return render(request, 'home.html', context)
+                    # code from APIExamples github repo to format date
+                    date_object = datetime.strptime(event_date_time[:10], "%Y-%m-%d")
+                    event_date = date_object.strftime("%a %b %d %Y")
+
+                    dictionary_placeholder = {
+                        'event_name': event_name,
+                        'event_date': event_date,
+                        'event_venue': event_venue,
+                        'event_address': event_address,
+                        'event_city': event_city,
+                        'event_state': event_state,
+                        'event_image': event_image,
+                        'event_url': event_url,
+                    }
+                    event_list.append(dictionary_placeholder)
+
+                context = {'events': event_list, 'response_info': response_info}
+                return render(request, 'home.html', context)
 
     context = {'response_info': response_info}
     return render(request, 'home.html', context)

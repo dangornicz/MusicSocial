@@ -24,19 +24,23 @@
                 <a class="nav-link text-white" href={% url 'home' %}>Home</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href={% url 'load' %}>Social</a>
+                <a class="nav-link text-white" href={% url 'newsfeed' %}>Social</a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href={% url 'profile' %}>Profile</a>
-            </li>
+            {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link text-white" href={% url 'profile' username=request.user %}>Profile</a>
+                </li>
+            {% endif %}
         </ul>
     </div>
+
     {% if user.is_authenticated %}
-        <p class="text-white">Hello {{ user.username }}</p>
-        <a class="btn btn-sm btn-success" href={% url 'user_logout' %}>Logout</a>
+        <p class="text-white m-2">Hello {{ user.username }}!</p>
+        <a class="btn btn-sm btn-success m-1" href={% url 'user_logout' %}>Logout</a>
     {% else %}
-        <a class="btn btn-sm btn-success" href={% url 'user_login' %}>Login / Sign-up</a>
+        <a class="btn btn-sm btn-success m-1" href={% url 'user_login' %}>Login / Sign-up</a>
     {% endif %}
+
 </nav>
 
 {% block body %}
