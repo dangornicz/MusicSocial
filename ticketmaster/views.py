@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import requests
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 
 
 # Create your views here.

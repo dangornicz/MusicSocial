@@ -21,7 +21,7 @@ from ticketmaster import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.ticketmaster_home, name="home"),
+
     path('ticketmaster/', include('ticketmaster.urls')),
     path('accounts/', include('accounts.urls')),
     path('social/', include('social.urls')),
